@@ -215,7 +215,7 @@ export async function getClientProfile(req, res) {
 export async function updateClientProfile(req, res) {
   try {
     const clientId = req.user.id;
-    const { name, age, gender, height, weight, location, onboarding_details, answers } = req.body;
+    const { name, age, gender, height, weight, location, onboarding_details, health_conditions, answers } = req.body;
 
     // 1. Fetch or create patient profile
     let patient = await query.get('SELECT * FROM patients WHERE client_id = ?', [clientId]);
@@ -280,10 +280,13 @@ export async function updateClientProfile(req, res) {
     }
 
     // 3. Update patient data
+    // health_conditions: prefer explicit field sent from client, else fall back to allergies from onboarding_details
     const safeDetails = onboarding_details ? (typeof onboarding_details === 'string' ? onboarding_details : JSON.stringify(onboarding_details)) : '{}';
-    const allergiesStr = (onboarding_details && Array.isArray(onboarding_details.allergies)) 
-      ? onboarding_details.allergies.join(', ') 
-      : (patient.health_conditions || '');
+    const healthConditionsStr = health_conditions !== undefined
+      ? health_conditions
+      : ((onboarding_details && Array.isArray(onboarding_details.allergies))
+          ? onboarding_details.allergies.join(', ')
+          : (patient.health_conditions || ''));
 
     await query.run(
       `UPDATE patients 
@@ -298,7 +301,7 @@ export async function updateClientProfile(req, res) {
         location || patient.location || '',
         calculatedDosha,
         safeDetails,
-        allergiesStr,
+        healthConditionsStr,
         patientId
       ]
     );

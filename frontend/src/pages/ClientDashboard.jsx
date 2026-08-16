@@ -148,6 +148,9 @@ export default function ClientDashboard() {
   const [showAllergyInput, setShowAllergyInput] = useState(false);
   const [wMedications, setWMedications] = useState('None');
 
+  // Step 5.5: Health Conditions (NEW)
+  const [wHealthConditions, setWHealthConditions] = useState([]);
+
   // Step 6: Intention
   const [wIntention, setWIntention] = useState('Improve Digestion');
 
@@ -307,6 +310,7 @@ export default function ClientDashboard() {
       lifestyle: { sleep: wSleepQuality, stress: wStress, work: wWorkEnv },
       allergies: wAllergies,
       medications: wMedications,
+      healthConditions: wHealthConditions,
       intention: wIntention
     };
 
@@ -325,6 +329,7 @@ export default function ClientDashboard() {
           weight: parseFloat(wWeight) || 60,
           location: wLocation,
           onboarding_details: onboardingDetails,
+          health_conditions: wHealthConditions.join(', '),
           answers: wQuizAnswers
         })
       });
@@ -769,7 +774,84 @@ export default function ClientDashboard() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem' }}>
               <button className="btn btn-secondary" onClick={() => setWizardStep(4)}>← Back</button>
-              <button className="btn btn-primary" style={{ padding: '0.8rem 2.5rem' }} onClick={() => setWizardStep(6)}>Continue →</button>
+              <button className="btn btn-primary" style={{ padding: '0.8rem 2.5rem' }} onClick={() => setWizardStep(5.5)}>Continue →</button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5.5: Health Conditions */}
+        {wizardStep === 5.5 && (
+          <div className="card fade-in" style={{ padding: '3rem' }}>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', fontFamily: 'var(--font-serif)' }}>What health concerns do you have?</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem' }}>Select all that apply. This helps us personalize your diet plan and alert your dietitian.</p>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '2rem' }}>
+              {[
+                { label: '🩺 Diabetes', value: 'Diabetes' },
+                { label: '⚖️ Obesity / Overweight', value: 'Obesity' },
+                { label: '🔥 Acidity / GERD', value: 'Acidity/GERD' },
+                { label: '❤️ High Blood Pressure', value: 'Hypertension' },
+                { label: '🦋 Thyroid Disorder', value: 'Thyroid' },
+                { label: '🦴 Joint / Knee Pain', value: 'Joint Pain' },
+                { label: '🍽️ Poor Digestion / IBS', value: 'Poor Digestion' },
+                { label: '🌸 Hormonal / PCOS', value: 'PCOS/Hormonal' },
+                { label: '🫁 Respiratory / Asthma', value: 'Respiratory' },
+                { label: '🧠 Anxiety / Depression', value: 'Anxiety/Stress' },
+                { label: '💤 Chronic Fatigue', value: 'Chronic Fatigue' },
+                { label: '🍬 Cholesterol', value: 'High Cholesterol' },
+                { label: '🌿 Skin Disorders', value: 'Skin Disorders' },
+                { label: '✅ None / General Wellness', value: 'None' }
+              ].map(({ label, value }) => {
+                const isSelected = wHealthConditions.includes(value);
+                return (
+                  <button
+                    key={value}
+                    onClick={() => {
+                      if (value === 'None') {
+                        setWHealthConditions(['None']);
+                      } else {
+                        setWHealthConditions(prev => {
+                          const withoutNone = prev.filter(c => c !== 'None');
+                          return isSelected
+                            ? withoutNone.filter(c => c !== value)
+                            : [...withoutNone, value];
+                        });
+                      }
+                    }}
+                    style={{
+                      padding: '0.6rem 1.2rem',
+                      borderRadius: '999px',
+                      border: `2px solid ${isSelected ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                      background: isSelected ? 'rgba(26,66,32,0.08)' : 'white',
+                      color: isSelected ? 'var(--primary-dark)' : 'var(--text-main)',
+                      fontWeight: isSelected ? 700 : 400,
+                      fontSize: '0.92rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {wHealthConditions.length > 0 && !wHealthConditions.includes('None') && (
+              <div style={{ padding: '0.75rem 1rem', background: '#f4f7f5', borderRadius: '8px', fontSize: '0.88rem', color: 'var(--primary-dark)', marginBottom: '1rem' }}>
+                <strong>Selected:</strong> {wHealthConditions.join(', ')}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
+              <button className="btn btn-secondary" onClick={() => setWizardStep(5)}>← Back</button>
+              <button
+                className="btn btn-primary"
+                style={{ padding: '0.8rem 2.5rem' }}
+                disabled={wHealthConditions.length === 0}
+                onClick={() => setWizardStep(6)}
+              >
+                Continue →
+              </button>
             </div>
           </div>
         )}
@@ -845,6 +927,7 @@ export default function ClientDashboard() {
               <div style={{ background: '#fcf8ee', padding: '1.5rem', borderRadius: '12px', border: '1px solid #faeccb' }}>
                 <h4 style={{ color: 'var(--secondary-dark)', marginBottom: '0.75rem' }}>Health Context & Intention</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <div><strong>Health Concerns:</strong> {wHealthConditions.length > 0 ? wHealthConditions.join(', ') : 'None'}</div>
                   <div><strong>Allergies:</strong> {wAllergies.join(', ') || 'None'}</div>
                   <div><strong>Medications:</strong> {wMedications}</div>
                   <div><strong>Primary Intention:</strong> {wIntention}</div>

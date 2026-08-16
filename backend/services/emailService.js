@@ -38,7 +38,7 @@ function createTransporter() {
  */
 export async function sendOtpEmail(toEmail, otpCode, purpose = 'signup') {
   const transporter = createTransporter();
-  const fromName = process.env.SMTP_FROM_NAME || 'AYUVA - Smart Ayurvedic Platform';
+  const fromName = process.env.SMTP_FROM_NAME || 'SPARTANS - Smart Ayurvedic Platform';
   const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || process.env.GMAIL_USER || 'no-reply@spartans.com';
 
   const purposeLabels = {
@@ -47,7 +47,7 @@ export async function sendOtpEmail(toEmail, otpCode, purpose = 'signup') {
     reset_password: 'Password Reset Request'
   };
 
-  const subject = `[${otpCode}] ${purposeLabels[purpose] || 'Your AYUVA Verification Code'}`;
+  const subject = `[${otpCode}] ${purposeLabels[purpose] || 'Your SPARTANS Verification Code'}`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -72,13 +72,13 @@ export async function sendOtpEmail(toEmail, otpCode, purpose = 'signup') {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🌿 AYUVA</h1>
+          <h1>🌿 SPARTANS</h1>
           <p>Smart Ayurvedic Diet Management Platform</p>
         </div>
         <div class="content">
           <div class="greeting">Hello,</div>
           <p class="info-text">
-            Use the following 6-digit One-Time Password (OTP) to complete your <strong>${purposeLabels[purpose] || 'verification'}</strong> on AYUVA.
+            Use the following 6-digit One-Time Password (OTP) to complete your <strong>${purposeLabels[purpose] || 'verification'}</strong> on SPARTANS.
           </p>
           <div class="otp-box">
             <div class="otp-code">${otpCode}</div>

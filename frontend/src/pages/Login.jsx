@@ -208,7 +208,7 @@ export default function Login() {
         <div style={{ display: 'inline-flex', color: 'var(--primary-color)', marginBottom: '1rem' }}>
           <Leaf size={40} strokeWidth={2.5} />
         </div>
-        <h2>AYUVA</h2>
+        <h2>SPARTANS</h2>
         <p style={{ color: 'var(--text-muted)' }}>Ayurvedic Diet Management Portal</p>
       </div>
 
@@ -736,7 +736,7 @@ export default function Login() {
         <p>
           {isLoginTab ? (
             <>
-              New to Ayuva?{' '}
+              New to Spartans?{' '}
               <span onClick={() => resetAllStates(false)} style={{ cursor: 'pointer', fontWeight: 600 }}>Create an account</span>
             </>
           ) : (

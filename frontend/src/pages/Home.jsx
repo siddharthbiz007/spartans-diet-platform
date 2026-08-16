@@ -149,7 +149,7 @@ export default function Home() {
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
         <p>© 2026 Spartans Team. Developed for Smart India Hackathon.</p>
-        <p>Ayuva Diet Management Software is fully operational.</p>
+        <p>Spartans Diet Management Platform is fully operational.</p>
       </footer>
     </div>
   );

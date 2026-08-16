@@ -32,7 +32,7 @@ export default function Navbar() {
   return (
     <nav className="navbar" style={{ padding: '0 4rem' }}>
       <Link to="/" className="nav-brand" style={{ fontSize: '1.8rem', letterSpacing: '1px', color: 'var(--primary-color)' }}>
-        AYUVA
+        SPARTANS
       </Link>
 
       <div className="nav-links" style={{ gap: '2.5rem' }}>

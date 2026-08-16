@@ -1020,6 +1020,15 @@ export default function ClientDashboard() {
                 </div>
               </div>
             )}
+            <button
+              onClick={() => window.print()}
+              style={{ marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'white', color: 'var(--text-muted)', fontSize: '0.83rem', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-color)'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'var(--primary-color)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+              title="Download plan as PDF"
+            >
+              🖨️ Download PDF
+            </button>
           </div>
         </div>
 

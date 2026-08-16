@@ -813,3 +813,50 @@ button, input, select, textarea {
   color: var(--danger-color);
   transform: rotate(90deg);
 }
+
+/* ============================================
+   PRINT / PDF EXPORT STYLES
+   ============================================ */
+@media print {
+  .navbar,
+  .nav-actions,
+  button,
+  .modal-overlay,
+  .dashboard-header > button,
+  [title="Download plan as PDF"] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    font-size: 12pt;
+    color: #000;
+  }
+
+  .app-container {
+    padding: 0;
+  }
+
+  .main-content {
+    padding: 0;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .fade-in {
+    animation: none !important;
+  }
+
+  h1, h2, h3 {
+    color: #0f2b15 !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

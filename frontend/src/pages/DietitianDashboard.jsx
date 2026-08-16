@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config/api';
-import { PlusCircle, Search, ClipboardCheck, Apple, Trash2, ShieldAlert } from 'lucide-react';
+import { PlusCircle, Search, ClipboardCheck, Apple, Trash2, ShieldAlert, BarChart3, Users } from 'lucide-react';
 
 export default function DietitianDashboard() {
   const [patients, setPatients] = useState([]);
@@ -15,6 +15,14 @@ export default function DietitianDashboard() {
   const [generatingAi, setGeneratingAi] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
   const [currentPatientName, setCurrentPatientName] = useState('');
+
+  // Analytics State
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const activeTab = searchParams.get('tab') || 'patients';
 
   // New Patient Form state
   const [name, setName] = useState('');
@@ -30,7 +38,8 @@ export default function DietitianDashboard() {
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+    if (activeTab === 'analytics') fetchAnalytics();
+  }, [activeTab]);
 
   async function fetchPatients() {
     try {
@@ -48,6 +57,16 @@ export default function DietitianDashboard() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function fetchAnalytics() {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/analytics`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) setAnalytics(await res.json());
+    } catch (err) { console.error(err); } finally { setAnalyticsLoading(false); }
   }
 
   const handleAddPatient = async (e) => {
@@ -154,15 +173,127 @@ export default function DietitianDashboard() {
     <div className="fade-in">
       <div className="dashboard-header">
         <div className="dashboard-title-area">
-          <h2>Patients Registry</h2>
-          <p>Register, assess, and manage Ayurvedic diet profiles for your patients.</p>
+          <h2>{activeTab === 'analytics' ? 'Practice Analytics' : 'Patients Registry'}</h2>
+          <p>{activeTab === 'analytics' ? 'Insights about your patient base and practice activity.' : 'Register, assess, and manage Ayurvedic diet profiles for your patients.'}</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-          <PlusCircle size={18} />
-          Register Patient
-        </button>
+        {activeTab !== 'analytics' && (
+          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
+            <PlusCircle size={18} />
+            Register Patient
+          </button>
+        )}
       </div>
 
+      {/* Analytics Tab */}
+      {activeTab === 'analytics' && (
+        <div>
+          {analyticsLoading ? (
+            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>Loading analytics...</div>
+          ) : !analytics ? (
+            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>No data yet. Add patients to see analytics.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* KPI Cards */}
+              <div className="grid-4" style={{ gap: '1rem' }}>
+                {[
+                  { label: 'Total Patients', value: analytics.totalPatients, color: 'var(--primary-color)', icon: '👥' },
+                  { label: 'Dosha Assessed', value: analytics.assessedPatients, color: 'var(--secondary-color)', icon: '🌿' },
+                  { label: 'Active Plans', value: analytics.activePlans, color: 'var(--success-color)', icon: '📋' },
+                  { label: 'Online Clients', value: analytics.onlineClients, color: '#1565c0', icon: '🌐' },
+                ].map(({ label, value, color, icon }) => (
+                  <div key={label} className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{icon}</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, color }}>{value}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid-2" style={{ gap: '1.5rem' }}>
+                {/* Dosha Distribution */}
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <BarChart3 size={20} style={{ color: 'var(--primary-color)' }} /> Dosha Distribution
+                  </h3>
+                  {analytics.doshaDistribution.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No assessed patients yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {analytics.doshaDistribution.map(({ dosha, count }) => {
+                        const pct = analytics.assessedPatients > 0 ? Math.round((count / analytics.assessedPatients) * 100) : 0;
+                        const color = dosha?.includes('Vata') ? '#5c7cfa' : dosha?.includes('Pitta') ? '#f03e3e' : '#37b24d';
+                        return (
+                          <div key={dosha}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.3rem' }}>
+                              <span style={{ fontWeight: 600 }}>{dosha}</span>
+                              <span style={{ color: 'var(--text-muted)' }}>{count} patients ({pct}%)</span>
+                            </div>
+                            <div style={{ height: '10px', background: '#f0f0f0', borderRadius: '999px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: '999px', transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Top Health Conditions */}
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Users size={20} style={{ color: 'var(--secondary-color)' }} /> Top Health Conditions
+                  </h3>
+                  {analytics.topConditions.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No conditions recorded yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      {analytics.topConditions.map(({ name, count }) => {
+                        const maxCount = analytics.topConditions[0]?.count || 1;
+                        const pct = Math.round((count / maxCount) * 100);
+                        return (
+                          <div key={name}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.83rem', marginBottom: '0.25rem' }}>
+                              <span style={{ fontWeight: 600 }}>{name}</span>
+                              <span style={{ color: 'var(--text-muted)' }}>{count}</span>
+                            </div>
+                            <div style={{ height: '8px', background: '#f0f0f0', borderRadius: '999px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: 'var(--secondary-color)', borderRadius: '999px', transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Monthly Plans Chart */}
+              {analytics.monthlyPlans.length > 0 && (
+                <div className="card" style={{ padding: '1.5rem' }}>
+                  <h3 style={{ marginBottom: '1.25rem' }}>📅 Diet Plans Created — Last 6 Months</h3>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.75rem', height: '120px' }}>
+                    {analytics.monthlyPlans.map(({ month, count }) => {
+                      const maxCount = Math.max(...analytics.monthlyPlans.map(m => m.count), 1);
+                      const heightPct = Math.max((count / maxCount) * 100, 8);
+                      const label = month ? month.split('-').slice(1).join('/') + ' ' + month.split('-')[0].slice(2) : '';
+                      return (
+                        <div key={month} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-color)' }}>{count}</span>
+                          <div style={{ width: '100%', height: `${heightPct}%`, background: 'var(--primary-color)', borderRadius: '6px 6px 0 0', transition: 'height 0.5s ease', opacity: 0.85 }} />
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Patients Tab (default) */}
+      {activeTab !== 'analytics' && (<>
       {/* Stats Board */}
       <div className="grid-3" style={{ marginBottom: '2.5rem' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem' }}>
@@ -429,6 +560,7 @@ export default function DietitianDashboard() {
           </div>
         </div>
       )}
+      </>)}
     </div>
   );
 }

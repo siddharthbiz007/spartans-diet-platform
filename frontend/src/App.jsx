@@ -8,6 +8,7 @@ import DietitianDashboard from './pages/DietitianDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import AssessmentPage from './pages/AssessmentPage';
 import DietPlannerPage from './pages/DietPlannerPage';
+import FoodDatabase from './pages/FoodDatabase';
 
 // Protected Route wrapper component
 function ProtectedRoute({ children, allowedRole }) {
@@ -73,6 +74,13 @@ export default function App() {
               <Route path="/diet-planner/:patientId" element={
                 <ProtectedRoute allowedRole="dietitian">
                   <DietPlannerPage />
+                </ProtectedRoute>
+              } />
+
+
+              <Route path="/foods" element={
+                <ProtectedRoute>
+                  <FoodDatabase />
                 </ProtectedRoute>
               } />
 

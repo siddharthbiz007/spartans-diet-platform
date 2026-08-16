@@ -21,6 +21,7 @@ import {
 import { submitAssessment, getAssessmentHistory } from '../controllers/assessmentController.js';
 import { getFoods, createDietPlan, getDietPlansByPatient, updateDietPlanStatus } from '../controllers/dietController.js';
 import { generateClientReport } from '../controllers/aiController.js';
+import { getDietitianAnalytics } from '../controllers/analyticsController.js';
 import { logProgress, getProgressStats } from '../controllers/progressController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
@@ -60,5 +61,6 @@ router.put('/diet-plans/:id/status', authenticateToken, requireRole('dietitian')
 
 // --- AI Integration Route ---
 router.get('/ai/analyze-client/:patientId', authenticateToken, requireRole('dietitian'), generateClientReport);
+router.get('/analytics', authenticateToken, requireRole('dietitian'), getDietitianAnalytics);
 
 export default router;

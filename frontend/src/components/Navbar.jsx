@@ -55,6 +55,9 @@ export default function Navbar() {
             <Link to="/dashboard?tab=progress" className={`nav-link ${isTabActive('progress') ? 'active' : ''}`}>
               Progress
             </Link>
+            <Link to="/foods" className={`nav-link ${location.pathname === '/foods' ? 'active' : ''}`}>
+              Food DB
+            </Link>
             <Link to="/dashboard?tab=messages" className={`nav-link ${isTabActive('messages') ? 'active' : ''}`}>
               Messages
             </Link>
@@ -64,17 +67,14 @@ export default function Navbar() {
         {/* Dietitian User Links */}
         {user && user.role === 'dietitian' && (
           <>
-            <Link to="/dashboard?tab=overview" className={`nav-link ${isTabActive('overview', true) ? 'active' : ''}`}>
-              Dashboard
+            <Link to="/dashboard" className={`nav-link ${location.pathname === '/dashboard' && !getActiveTab() ? 'active' : ''}`}>
+              Patients
             </Link>
-            <Link to="/dashboard?tab=clients" className={`nav-link ${isTabActive('clients') ? 'active' : ''}`}>
-              Clients
+            <Link to="/foods" className={`nav-link ${location.pathname === '/foods' ? 'active' : ''}`}>
+              Food DB
             </Link>
-            <Link to="/dashboard?tab=aiplans" className={`nav-link ${isTabActive('aiplans') ? 'active' : ''}`}>
-              AI Plans
-            </Link>
-            <Link to="/dashboard?tab=appointments" className={`nav-link ${isTabActive('appointments') ? 'active' : ''}`}>
-              Appointments
+            <Link to="/dashboard?tab=analytics" className={`nav-link ${isTabActive('analytics') ? 'active' : ''}`}>
+              Analytics
             </Link>
           </>
         )}

@@ -52,28 +52,23 @@ export async function getProgressStats(req, res) {
     if (logs.length > 0) {
       const totalLogs = logs.length;
       let positiveLogs = 0;
-      let heavyLogs = 0;
 
       logs.forEach(log => {
         if (log.feeling === 'Light & Energized') positiveLogs++;
-        if (log.feeling === 'Heavy / Bloated') heavyLogs++;
       });
 
-      // Simple adherence calc: more positive logs = higher adherence
+      // Real adherence: percentage of positive check-ins out of total
       adherenceRate = Math.round((positiveLogs / totalLogs) * 100);
 
-      // Agni status calc
+      // Agni status based on most recent log
       const recentFeeling = logs[0].feeling;
       if (recentFeeling === 'Light & Energized') agniStatus = 'Optimal';
       else if (recentFeeling === 'Heavy / Bloated') agniStatus = 'Sluggish';
       else agniStatus = 'Variable';
-      
-      // Give a minimum adherence floor if they are logging at all
-      if (adherenceRate < 50) adherenceRate = 50 + Math.round(Math.random() * 20); 
     } else {
-      // Default baseline if no logs yet
-      adherenceRate = 100;
-      agniStatus = 'Baseline';
+      // No logs yet — show honest defaults
+      adherenceRate = 0;
+      agniStatus = 'Not Started';
     }
 
     res.json({ adherenceRate, agniStatus, sleepTime });

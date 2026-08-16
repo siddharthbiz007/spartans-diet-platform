@@ -92,8 +92,8 @@ export default function ClientDashboard() {
   const [checkInLogs, setCheckInLogs] = useState([]);
 
   // Progress subpage state
-  const [adherenceRate, setAdherenceRate] = useState(100);
-  const [agniStatus, setAgniStatus] = useState('Baseline');
+  const [adherenceRate, setAdherenceRate] = useState(0);
+  const [agniStatus, setAgniStatus] = useState('Not Started');
   const [sleepTime, setSleepTime] = useState(7.5);
   const [selectedFeeling, setSelectedFeeling] = useState('Light & Energized');
   const [weeklyNotes, setWeeklyNotes] = useState('');

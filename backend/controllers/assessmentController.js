@@ -42,10 +42,10 @@ export async function submitAssessment(req, res) {
       return res.status(400).json({ error: 'Invalid answers format. Must score vata, pitta, or kapha.' });
     }
 
-    // Calculate percentages
+    // Calculate percentages — derive kapha as remainder to prevent rounding to 101%
     const vataPct = Math.round((vataScore / total) * 100);
     const pittaPct = Math.round((pittaScore / total) * 100);
-    const kaphaPct = Math.round((kaphaScore / total) * 100);
+    const kaphaPct = 100 - vataPct - pittaPct;
 
     // Determine dominant Dosha
     let dominantDosha = '';

@@ -253,7 +253,7 @@ export async function updateClientProfile(req, res) {
       if (total > 0) {
         const vataPct = Math.round((vataScore / total) * 100);
         const pittaPct = Math.round((pittaScore / total) * 100);
-        const kaphaPct = Math.round((kaphaScore / total) * 100);
+        const kaphaPct = 100 - vataPct - pittaPct;
 
         let dominant = '';
         const scores = [
@@ -303,8 +303,10 @@ export async function updateClientProfile(req, res) {
       ]
     );
 
-    // 4. Auto-generate diet plan based on Dosha, cuisine, and dietary pattern
-    if (calculatedDosha) {
+    // 4. Auto-generate diet plan ONLY when new quiz answers were submitted in this request
+    //    Prevents overwriting a dietitian's manual plan on every profile save.
+    const hasNewAnswers = answers && typeof answers === 'object' && Object.keys(answers).length > 0;
+    if (hasNewAnswers && calculatedDosha) {
       try {
         // Set previous active plans to Archived
         await query.run("UPDATE diet_plans SET status = 'Archived' WHERE patient_id = ? AND status = 'Active'", [patientId]);

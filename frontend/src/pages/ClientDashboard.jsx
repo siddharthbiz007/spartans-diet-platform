@@ -1068,7 +1068,6 @@ export default function ClientDashboard() {
             </p>
           )}
         </div>
-        </div>
         
         {/* Meal Detail Modal */}
         {showMealModal && mealModalContent && (

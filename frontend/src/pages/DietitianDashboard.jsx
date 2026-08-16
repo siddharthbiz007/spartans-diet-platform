@@ -10,6 +10,12 @@ export default function DietitianDashboard() {
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // AI Report State
+  const [aiReport, setAiReport] = useState(null);
+  const [generatingAi, setGeneratingAi] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [currentPatientName, setCurrentPatientName] = useState('');
+
   // New Patient Form state
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
@@ -92,6 +98,29 @@ export default function DietitianDashboard() {
       }
     } catch (err) {
       setFormError('Failed to communicate with backend.');
+    }
+  };
+
+  const handleGenerateAiReport = async (patientId, patientName) => {
+    setGeneratingAi(true);
+    setShowAiModal(true);
+    setCurrentPatientName(patientName);
+    setAiReport(null);
+
+    try {
+      const res = await fetch(`${API_URL}/ai/analyze-client/${patientId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAiReport(data.report);
+      } else {
+        setAiReport(`Error: ${data.error || 'Failed to generate report'}`);
+      }
+    } catch (err) {
+      setAiReport(`Error: Could not connect to server. ${err.message}`);
+    } finally {
+      setGeneratingAi(false);
     }
   };
 
@@ -236,12 +265,15 @@ export default function DietitianDashboard() {
                       </div>
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                         <button className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => navigate(`/assessment/${patient.id}`)}>
                           Quiz
                         </button>
                         <button className="btn btn-gold" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => navigate(`/diet-planner/${patient.id}`)}>
                           Plan Diet
+                        </button>
+                        <button className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => handleGenerateAiReport(patient.id, patient.name)}>
+                          AI Analysis
                         </button>
                         <button 
                           className="btn btn-text" 
@@ -364,6 +396,36 @@ export default function DietitianDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* AI Report Modal */}
+      {showAiModal && (
+        <div className="modal-overlay" onClick={() => setShowAiModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '700px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0 }}>AI Analysis: {currentPatientName}</h3>
+              <button className="close-btn" onClick={() => setShowAiModal(false)} title="Close">
+                ×
+              </button>
+            </div>
+            <div className="modal-body" style={{ background: '#f9fbf9' }}>
+              {generatingAi ? (
+                <div style={{ textAlign: 'center', padding: '3rem' }}>
+                  <div className="spinner" style={{ margin: '0 auto 1rem', width: '40px', height: '40px', border: '4px solid rgba(26,66,32,0.1)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                  <p style={{ color: 'var(--text-muted)' }}>Generating comprehensive Ayurvedic analysis... This may take a moment.</p>
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              ) : (
+                <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                  {aiReport}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '1rem 2rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', background: 'white' }}>
+              <button className="btn btn-secondary" onClick={() => setShowAiModal(false)}>Close</button>
+            </div>
           </div>
         </div>
       )}

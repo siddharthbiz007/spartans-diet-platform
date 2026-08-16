@@ -20,6 +20,7 @@ import {
 } from '../controllers/patientController.js';
 import { submitAssessment, getAssessmentHistory } from '../controllers/assessmentController.js';
 import { getFoods, createDietPlan, getDietPlansByPatient, updateDietPlanStatus } from '../controllers/dietController.js';
+import { generateClientReport } from '../controllers/aiController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -53,5 +54,8 @@ router.delete('/patients/:id', authenticateToken, requireRole('dietitian'), dele
 
 router.post('/diet-plans', authenticateToken, requireRole('dietitian'), createDietPlan);
 router.put('/diet-plans/:id/status', authenticateToken, requireRole('dietitian'), updateDietPlanStatus);
+
+// --- AI Integration Route ---
+router.get('/ai/analyze-client/:patientId', authenticateToken, requireRole('dietitian'), generateClientReport);
 
 export default router;

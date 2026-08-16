@@ -40,7 +40,7 @@ export default function Home() {
         <div className="hero-image-container">
           <div className="hero-circle"></div>
           {/* A mock UI showing professional dietitian analysis */}
-          <div className="card" style={{ padding: '1.5rem', width: '320px', transform: 'rotate(-2deg)', boxShadow: 'var(--shadow-lg)', border: '1px solid rgba(26,66,32,0.1)' }}>
+          <div className="card" style={{ padding: '1.5rem', width: '100%', maxWidth: '320px', transform: 'rotate(-2deg)', boxShadow: 'var(--shadow-lg)', border: '1px solid rgba(26,66,32,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h4 style={{ margin: 0, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Active Diet Plan</h4>
               <span className="badge badge-success">Active</span>

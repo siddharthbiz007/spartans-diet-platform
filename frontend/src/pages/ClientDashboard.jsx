@@ -278,14 +278,18 @@ export default function ClientDashboard() {
         })
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
         await fetchClientData();
         
         let vataCount = 0, pittaCount = 0, kaphaCount = 0;
         Object.values(wQuizAnswers).forEach(ans => {
-          if (ans === 'vata') vataCount++;
-          else if (ans === 'pitta') pittaCount++;
-          else if (ans === 'kapha') kaphaCount++;
+          if (!ans) return;
+          const val = String(ans).toLowerCase();
+          if (val === 'vata') vataCount++;
+          else if (val === 'pitta') pittaCount++;
+          else if (val === 'kapha') kaphaCount++;
         });
         const total = vataCount + pittaCount + kaphaCount || 1;
         
@@ -297,11 +301,11 @@ export default function ClientDashboard() {
         
         setWizardStep(8);
       } else {
-        alert('Failed to save onboarding details.');
+        alert(data.error || 'Failed to save onboarding details. Please try again.');
       }
     } catch (err) {
-      console.error(err);
-      alert('Error connecting to servers.');
+      console.error('handleOnboardingSubmit error:', err);
+      alert('Error connecting to backend server: ' + err.message);
     } finally {
       setLoading(false);
     }

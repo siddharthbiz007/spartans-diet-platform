@@ -92,11 +92,16 @@ export default function ClientDashboard() {
   const [checkInLogs, setCheckInLogs] = useState([]);
 
   // Progress subpage state
-  const [adherenceRate, setAdherenceRate] = useState(85);
-  const [agniStatus, setAgniStatus] = useState('Optimal');
+  const [adherenceRate, setAdherenceRate] = useState(100);
+  const [agniStatus, setAgniStatus] = useState('Baseline');
   const [sleepTime, setSleepTime] = useState(7.5);
   const [selectedFeeling, setSelectedFeeling] = useState('Light & Energized');
   const [weeklyNotes, setWeeklyNotes] = useState('');
+
+  // Meal Modal State
+  const [showMealModal, setShowMealModal] = useState(false);
+  const [mealModalContent, setMealModalContent] = useState(null);
+  const [mealModalType, setMealModalType] = useState('details'); // 'details' or 'why'
 
   // Messages subpage state
   const [messages, setMessages] = useState([]);
@@ -151,6 +156,7 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     fetchClientData();
+    fetchProgressStats();
     const savedLogs = localStorage.getItem(`spartans_checkin_${user.id}`);
     if (savedLogs) {
       setCheckInLogs(JSON.parse(savedLogs));
@@ -194,6 +200,22 @@ export default function ClientDashboard() {
     }
   }
 
+  async function fetchProgressStats() {
+    try {
+      const res = await fetch(`${API_URL}/client/progress`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAdherenceRate(data.adherenceRate);
+        setAgniStatus(data.agniStatus);
+        setSleepTime(data.sleepTime);
+      }
+    } catch (err) {
+      console.error('Error fetching progress stats:', err);
+    }
+  }
+
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
@@ -226,10 +248,39 @@ export default function ClientDashboard() {
     }, 1500);
   };
 
-  const handleSaveProgress = (e) => {
+  const handleSaveProgress = async (e) => {
     e.preventDefault();
-    alert('Weekly Reflection Check-in saved successfully! Your dietitian has been notified.');
-    setWeeklyNotes('');
+    try {
+      const res = await fetch(`${API_URL}/client/progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          feeling: selectedFeeling,
+          notes: weeklyNotes
+        })
+      });
+
+      if (res.ok) {
+        alert('Weekly Reflection Check-in saved successfully! Your stats have been updated.');
+        setWeeklyNotes('');
+        fetchProgressStats(); // Refresh stats immediately
+      } else {
+        const data = await res.json();
+        alert(`Failed to save progress: ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while saving progress.');
+    }
+  };
+
+  const handleOpenMealModal = (mealName, items, type) => {
+    setMealModalType(type);
+    setMealModalContent({ mealName, items });
+    setShowMealModal(true);
   };
 
   const handleAddAllergy = (e) => {
@@ -987,10 +1038,10 @@ export default function ClientDashboard() {
                       </div>
 
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={() => alert('Portion details and preparation tips are loaded!')}>
+                        <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }} onClick={() => handleOpenMealModal(mealName, mealItems, 'details')}>
                           View Details
                         </button>
-                        <button className="btn btn-gold" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', background: '#fcf8ee', border: '1px solid #faeccb', color: 'var(--secondary-dark)' }} onClick={() => alert('Balances biological qualities to suppress dosha aggravation.')}>
+                        <button className="btn btn-gold" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', background: '#fcf8ee', border: '1px solid #faeccb', color: 'var(--secondary-dark)' }} onClick={() => handleOpenMealModal(mealName, mealItems, 'why')}>
                           ✨ Why this?
                         </button>
                       </div>
@@ -1017,6 +1068,62 @@ export default function ClientDashboard() {
             </p>
           )}
         </div>
+        </div>
+        
+        {/* Meal Detail Modal */}
+        {showMealModal && mealModalContent && (
+          <div className="modal-overlay" onClick={() => setShowMealModal(false)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3 style={{ margin: 0, textTransform: 'capitalize' }}>
+                  {mealModalContent.mealName} {mealModalType === 'why' ? 'Ayurvedic Reasoning' : 'Details'}
+                </h3>
+                <button className="close-btn" onClick={() => setShowMealModal(false)} title="Close">×</button>
+              </div>
+              <div className="modal-body">
+                {mealModalType === 'details' ? (
+                  <div>
+                    <h4 style={{ marginBottom: '1rem', color: 'var(--primary-dark)' }}>Ingredients & Preparation</h4>
+                    <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {mealModalContent.items.map((item, idx) => (
+                        <li key={idx}>
+                          <strong>{item.name}</strong> - {item.quantity || '1 portion'}
+                        </li>
+                      ))}
+                    </ul>
+                    <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f4f7f5', borderRadius: '8px' }}>
+                      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                        <em>Preparation Note:</em> Cook warm and avoid raw cold items to support your Agni (digestive fire).
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 style={{ marginBottom: '1rem', color: 'var(--secondary-dark)' }}>Why this balances your Prakriti</h4>
+                    <ul style={{ paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {mealModalContent.items.map((item, idx) => (
+                        <li key={idx}>
+                          <strong>{item.name}:</strong> 
+                          {item.name.toLowerCase().includes('rice') || item.name.toLowerCase().includes('ghee') 
+                            ? ' Provides grounding, cooling energy to soothe Pitta and stabilize Vata.' 
+                            : ' Easy to digest, tridoshic, and helps clear Ama (toxins).'}
+                        </li>
+                      ))}
+                    </ul>
+                    <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#fcf8ee', border: '1px solid #faeccb', borderRadius: '8px' }}>
+                      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--secondary-dark)' }}>
+                        <em>Ayurvedic Principle:</em> Like increases like. By introducing opposing qualities (warm, oily, heavy) we counteract biological imbalances.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: '1rem 2rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', background: 'white' }}>
+                <button className="btn btn-primary" onClick={() => setShowMealModal(false)}>Got it</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

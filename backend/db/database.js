@@ -139,6 +139,18 @@ async function initDb() {
       )
     `);
 
+    // 7. Progress Logs Table
+    await query.run(`
+      CREATE TABLE IF NOT EXISTS progress_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        feeling TEXT NOT NULL,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (patient_id) REFERENCES patients(id)
+      )
+    `);
+
     console.log('Database tables initialized successfully.');
   } catch (err) {
     console.error('Error initializing tables:', err.message);

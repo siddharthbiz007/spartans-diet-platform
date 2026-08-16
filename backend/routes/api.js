@@ -21,6 +21,7 @@ import {
 import { submitAssessment, getAssessmentHistory } from '../controllers/assessmentController.js';
 import { getFoods, createDietPlan, getDietPlansByPatient, updateDietPlanStatus } from '../controllers/dietController.js';
 import { generateClientReport } from '../controllers/aiController.js';
+import { logProgress, getProgressStats } from '../controllers/progressController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -44,6 +45,8 @@ router.get('/diet-plans/:patientId', authenticateToken, getDietPlansByPatient);
 // --- Client Specific Routes ---
 router.get('/client/profile', authenticateToken, requireRole('client'), getClientProfile);
 router.put('/client/profile', authenticateToken, requireRole('client'), updateClientProfile);
+router.post('/client/progress', authenticateToken, requireRole('client'), logProgress);
+router.get('/client/progress', authenticateToken, requireRole('client'), getProgressStats);
 
 // --- Dietitian Specific Routes ---
 router.get('/patients', authenticateToken, requireRole('dietitian'), getAllPatients);

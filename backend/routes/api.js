@@ -20,7 +20,7 @@ import {
 } from '../controllers/patientController.js';
 import { submitAssessment, getAssessmentHistory } from '../controllers/assessmentController.js';
 import { getFoods, createDietPlan, getDietPlansByPatient, updateDietPlanStatus } from '../controllers/dietController.js';
-import { generateClientReport } from '../controllers/aiController.js';
+import { generateClientReport, generateDinacharya } from '../controllers/aiController.js';
 import { getDietitianAnalytics } from '../controllers/analyticsController.js';
 import { logProgress, getProgressStats } from '../controllers/progressController.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
@@ -48,6 +48,7 @@ router.get('/client/profile', authenticateToken, requireRole('client'), getClien
 router.put('/client/profile', authenticateToken, requireRole('client'), updateClientProfile);
 router.post('/client/progress', authenticateToken, requireRole('client'), logProgress);
 router.get('/client/progress', authenticateToken, requireRole('client'), getProgressStats);
+router.get('/client/dinacharya', authenticateToken, requireRole('client'), generateDinacharya);
 
 // --- Dietitian Specific Routes ---
 router.get('/patients', authenticateToken, requireRole('dietitian'), getAllPatients);

@@ -79,6 +79,118 @@ const QUIZ_QUESTIONS = [
   }
 ];
 
+// ── DinacharyaAI Sub-Component ────────────────────────────────────────────────
+function DinacharyaAI({ token, profileDosha, API_URL }) {
+  const [routine, setRoutine] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [generated, setGenerated] = useState(false);
+
+  async function handleGenerate() {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/client/dinacharya`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate');
+      setRoutine(data.routine);
+      setGenerated(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Static fallback routine shown before AI generation
+  const staticRoutine = [
+    { time: '06:30 AM', emoji: '🌅', title: 'Wake & Hydrate', desc: 'Drink a glass of warm water to stimulate Agni and clear toxins (Ama).', diseaseNote: '' },
+    { time: '07:00 AM', emoji: '🧘', title: 'Light Movement', desc: '15 mins of gentle yoga or a brisk walk to ground Vata.', diseaseNote: '' },
+    { time: '08:30 AM', emoji: '🍵', title: 'Breakfast', desc: 'Eat your prescribed warm breakfast in a calm environment.', diseaseNote: '' },
+    { time: '01:30 PM', emoji: '☀️', title: 'Lunch', desc: 'Consume your main meal of the day when your digestive fire (Agni) is at its peak strength.', diseaseNote: '' },
+    { time: '05:00 PM', emoji: '🌿', title: 'Evening Routine', desc: 'Gentle stretching or light walking. Avoid heavy snacks.', diseaseNote: '' },
+    { time: '08:00 PM', emoji: '🌙', title: 'Dinner', desc: 'Consume a light, warm soup or broth to facilitate restful sleep.', diseaseNote: '' },
+  ];
+
+  const displayRoutine = routine || staticRoutine;
+
+  return (
+    <div>
+      {/* Generate / Regenerate button */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.75rem 2rem', borderRadius: '12px',
+            background: loading ? '#ccc' : 'var(--primary-color)',
+            color: 'white', border: 'none', fontWeight: 700,
+            fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          {loading ? (
+            <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⏳</span> Generating your personalized routine...</>
+          ) : generated ? (
+            <><span>✨</span> Regenerate AI Routine</>
+          ) : (
+            <><span>🤖</span> Generate My AI Dinacharya</>
+          )}
+        </button>
+      </div>
+
+      {error && (
+        <div style={{ padding: '1rem', background: '#fdecea', border: '1px solid #f5c6cb', borderRadius: '8px', color: '#c62828', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {!generated && !loading && (
+        <div style={{ textAlign: 'center', padding: '0.5rem 0 1.5rem', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+          ↑ Click above to get AI-personalized advice based on your dosha and health conditions
+        </div>
+      )}
+
+      {generated && (
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <span style={{ background: 'rgba(26,66,32,0.08)', padding: '0.35rem 1rem', borderRadius: '999px', fontSize: '0.83rem', color: 'var(--primary-dark)', fontWeight: 600 }}>
+            ✅ Personalized for {profileDosha || 'your'} Dosha · Disease-specific advice included
+          </span>
+        </div>
+      )}
+
+      {/* Timeline */}
+      <div style={{ position: 'relative', paddingLeft: '3rem' }}>
+        <div style={{ position: 'absolute', left: '10px', top: '10px', bottom: '10px', width: '2px', backgroundColor: 'var(--border-color)' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {displayRoutine.map((item, idx) => (
+            <div key={idx} style={{ position: 'relative' }}>
+              {/* Bullet */}
+              <div style={{ position: 'absolute', left: '-28px', top: '8px', width: '16px', height: '16px', borderRadius: '50%', backgroundColor: 'white', border: '3px solid var(--primary-color)', zIndex: 2 }} />
+              <div className="card" style={{ padding: '1.25rem 1.5rem', border: '1px solid rgba(26,66,32,0.07)' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--secondary-color)', display: 'block', marginBottom: '0.25rem' }}>
+                  {item.emoji && <span style={{ marginRight: '0.3rem' }}>{item.emoji}</span>}
+                  {item.time}
+                </span>
+                <h4 style={{ fontSize: '1.15rem', color: 'var(--primary-dark)', marginBottom: '0.3rem' }}>{item.title}</h4>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>{item.desc}</p>
+                {item.diseaseNote && (
+                  <div style={{ marginTop: '0.6rem', padding: '0.5rem 0.75rem', background: 'rgba(181,141,61,0.1)', borderLeft: '3px solid var(--secondary-color)', borderRadius: '0 6px 6px 0', fontSize: '0.83rem', color: 'var(--secondary-dark)' }}>
+                    🩺 <strong>For your condition:</strong> {item.diseaseNote}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ClientDashboard() {
   const [profile, setProfile] = useState(null);
   const [assessments, setAssessments] = useState([]);
@@ -1219,53 +1331,30 @@ export default function ClientDashboard() {
     );
   }
 
-  // --- SUBPAGE: DINACHARYA (Image 2) ---
+  // --- SUBPAGE: DINACHARYA — AI-Powered ─────────────────────────────────────
   if (activeTab === 'dinacharya') {
     return (
       <div className="fade-in" style={{ maxWidth: '850px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-serif)', marginBottom: '0.5rem' }}>Your Daily Rhythm</h2>
-          <p style={{ color: 'var(--text-muted)' }}>A personalized routine to align your biology with nature.</p>
+          <p style={{ color: 'var(--text-muted)' }}>
+            AI-powered Dinacharya tailored to your Dosha{profile?.health_conditions ? ` and ${profile.health_conditions.split(',').slice(0,2).join(', ')}` : ''}.
+          </p>
+
+          {profile?.health_conditions && profile.health_conditions !== 'None' && (
+            <div style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'center', marginTop: '0.75rem' }}>
+              {profile.health_conditions.split(',').map(c => c.trim()).filter(Boolean).map(cond => (
+                <span key={cond} style={{ padding: '0.25rem 0.8rem', background: 'rgba(181,141,61,0.12)', border: '1px solid #d4a843', borderRadius: '999px', fontSize: '0.8rem', color: 'var(--secondary-dark)', fontWeight: 600 }}>
+                  🩺 {cond}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div style={{ position: 'relative', paddingLeft: '3rem' }}>
-          {/* Vertical line connector */}
-          <div style={{ position: 'absolute', left: '10px', top: '10px', bottom: '10px', width: '2px', backgroundColor: 'var(--border-color)' }}></div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            {[
-              { time: '06:30 AM', title: 'Wake & Hydrate', desc: 'Drink a glass of warm water to stimulate Agni and clear toxins (Ama).' },
-              { time: '07:00 AM', title: 'Light Movement', desc: '15 mins of gentle yoga or a brisk walk to ground Vata.' },
-              { time: '08:30 AM', title: 'Breakfast', desc: 'Eat your prescribed warm breakfast in a calm environment.' },
-              { time: '01:30 PM', title: 'Lunch', desc: 'Consume your main meal of the day when your digestive fire (Agni) is at its peak strength.' },
-              { time: '05:00 PM', title: 'Sunset Stretching', desc: 'Gentle stretching or light walking. Avoid heavy snacks.' },
-              { time: '08:00 PM', title: 'Dinner', desc: 'Consume a light, warm soup or broth to facilitate restful sleep.' }
-            ].map((item, idx) => (
-              <div key={idx} style={{ position: 'relative' }}>
-                {/* Bullet circle */}
-                <div style={{ 
-                  position: 'absolute', 
-                  left: '-28px', 
-                  top: '5px', 
-                  width: '16px', 
-                  height: '16px', 
-                  borderRadius: '50%', 
-                  backgroundColor: 'white', 
-                  border: '3px solid var(--primary-color)',
-                  zIndex: 2
-                }}></div>
-
-                <div className="card" style={{ padding: '1.25rem 1.5rem', border: '1px solid rgba(26,66,32,0.05)' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--secondary-color)', display: 'block', marginBottom: '0.25rem' }}>
-                    {item.time}
-                  </span>
-                  <h4 style={{ fontSize: '1.2rem', color: 'var(--primary-dark)', marginBottom: '0.25rem' }}>{item.title}</h4>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* AI Routine state */}
+        <DinacharyaAI token={token} profileDosha={profile?.dosha} API_URL={API_URL} />
       </div>
     );
   }
